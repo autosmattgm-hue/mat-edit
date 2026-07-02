@@ -1,4 +1,4 @@
-const CACHE = 'vull-v1';
+const CACHE = 'vull-v2';
 const CORE_ASSETS = [
   './',
   './index.html',

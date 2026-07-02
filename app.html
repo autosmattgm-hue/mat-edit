@@ -29,6 +29,13 @@
       <input class="proj-name" id="projName" value="untitled_sequence" spellcheck="false">
     </div>
     <div class="tb-right">
+      <div class="aspect-switch" id="aspectSwitch">
+        <button class="aspect-btn active" data-aspect="16:9" title="Landscape 16:9">16:9</button>
+        <button class="aspect-btn" data-aspect="9:16" title="Vertical 9:16 · Reels/TikTok">9:16</button>
+        <button class="aspect-btn" data-aspect="1:1" title="Square 1:1">1:1</button>
+        <button class="aspect-btn" data-aspect="4:5" title="Portrait 4:5">4:5</button>
+      </div>
+      <div class="tb-sep"></div>
       <button class="icon-btn" id="btnUndo" title="Undo (Ctrl+Z)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7L4 12l5 5"/><path d="M4 12h11a5 5 0 010 10h-1"/></svg>
       </button>
@@ -51,10 +58,12 @@
 
   <!-- LEFT PANEL: import + edit tools -->
   <aside class="panel-left" id="panelLeft">
-    <div class="tabbar">
+    <div class="tabbar tabbar-wrap">
       <button class="tab-btn active" data-tab="media">Media</button>
       <button class="tab-btn" data-tab="grade">Grade</button>
+      <button class="tab-btn" data-tab="fx">Effects</button>
       <button class="tab-btn" data-tab="text">Text</button>
+      <button class="tab-btn" data-tab="stickers">Stickers</button>
       <button class="tab-btn" data-tab="audio">Audio</button>
     </div>
 
@@ -80,6 +89,12 @@
           <div class="preset-chip" data-preset="vintage">Vintage</div>
           <div class="preset-chip" data-preset="cold">Cold</div>
           <div class="preset-chip" data-preset="warm">Warm</div>
+          <div class="preset-chip" data-preset="filmic">Filmic</div>
+          <div class="preset-chip" data-preset="noir">Noir</div>
+          <div class="preset-chip" data-preset="pastel">Pastel</div>
+          <div class="preset-chip" data-preset="cinered">Cine Red</div>
+          <div class="preset-chip" data-preset="teal_orange">Teal &amp; Orange</div>
+          <div class="preset-chip" data-preset="dream">Dream</div>
         </div>
         <div class="field">
           <label>Brightness <span class="val" id="valBrightness">100%</span></label>
@@ -94,8 +109,16 @@
           <input type="range" id="rngSaturation" min="0" max="220" value="100">
         </div>
         <div class="field">
+          <label>Exposure <span class="val" id="valExposure">0</span></label>
+          <input type="range" id="rngExposure" min="-50" max="50" value="0">
+        </div>
+        <div class="field">
           <label>Temperature <span class="val" id="valTemp">0</span></label>
           <input type="range" id="rngTemp" min="-50" max="50" value="0">
+        </div>
+        <div class="field">
+          <label>Hue <span class="val" id="valHue">0°</span></label>
+          <input type="range" id="rngHue" min="-180" max="180" value="0">
         </div>
         <div class="field">
           <label>Vignette <span class="val" id="valVignette">0%</span></label>
@@ -106,6 +129,61 @@
           <input type="range" id="rngSpeed" min="25" max="400" value="100">
         </div>
         <button class="btn btn-ghost btn-block btn-sm" id="btnResetGrade">Reset to original</button>
+
+        <div class="field" style="border-top:1px solid var(--line); padding-top:16px; margin-top:2px;">
+          <label>Transition in <span class="val" id="valTransDur">0.6s</span></label>
+          <select class="select-input" id="selTransition">
+            <option value="none">None (hard cut)</option>
+            <option value="fade">Crossfade</option>
+            <option value="slide">Slide</option>
+            <option value="wipe">Wipe</option>
+            <option value="zoom">Zoom</option>
+          </select>
+          <input type="range" id="rngTransDur" min="2" max="20" value="6" style="margin-top:8px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- EFFECTS TAB -->
+    <div class="tabpanel" data-panel="fx">
+      <div id="fxEmpty" class="empty-hint">Select a clip to add blur, grain, sharpen or a chroma-key (green screen).</div>
+      <div id="fxControls" style="display:none; flex-direction:column; gap:16px;">
+        <div class="field">
+          <label>Blur <span class="val" id="valBlur">0px</span></label>
+          <input type="range" id="rngBlur" min="0" max="20" value="0">
+        </div>
+        <div class="field">
+          <label>Sharpen <span class="val" id="valSharpen">0%</span></label>
+          <input type="range" id="rngSharpen" min="0" max="100" value="0">
+        </div>
+        <div class="field">
+          <label>Film grain <span class="val" id="valGrain">0%</span></label>
+          <input type="range" id="rngGrain" min="0" max="100" value="0">
+        </div>
+        <div class="field" style="border-top:1px solid var(--line); padding-top:16px;">
+          <label style="display:flex; align-items:center; justify-content:space-between;">
+            <span>Chroma key (green screen)</span>
+            <input type="checkbox" id="chkChroma">
+          </label>
+        </div>
+        <div id="chromaControls" style="display:none; flex-direction:column; gap:14px;">
+          <div class="field">
+            <label>Key color</label>
+            <div class="color-row" id="chromaColorRow">
+              <div class="swatch active" style="background:#00ff66" data-color="#00ff66"></div>
+              <div class="swatch" style="background:#0072ff" data-color="#0072ff"></div>
+              <div class="swatch" style="background:#ff00d0" data-color="#ff00d0"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Similarity <span class="val" id="valChromaSim">40%</span></label>
+            <input type="range" id="rngChromaSim" min="5" max="90" value="40">
+          </div>
+          <div class="field">
+            <label>Edge smoothness <span class="val" id="valChromaSmooth">20%</span></label>
+            <input type="range" id="rngChromaSmooth" min="0" max="60" value="20">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -118,9 +196,22 @@
           <label>Content</label>
           <textarea class="text-input" id="txtContent" placeholder="Type your caption…"></textarea>
         </div>
+        <div class="field-row">
+          <button class="toggle-btn" id="btnBold" title="Bold"><b>B</b></button>
+          <button class="toggle-btn" id="btnItalic" title="Italic"><i>I</i></button>
+          <button class="toggle-btn" id="btnOutline" title="Outline">O</button>
+        </div>
         <div class="field">
           <label>Size <span class="val" id="valTextSize">42px</span></label>
           <input type="range" id="rngTextSize" min="14" max="120" value="42">
+        </div>
+        <div class="field">
+          <label>Opacity <span class="val" id="valTextOpacity">100%</span></label>
+          <input type="range" id="rngTextOpacity" min="10" max="100" value="100">
+        </div>
+        <div class="field">
+          <label>Rotation <span class="val" id="valTextRotate">0°</span></label>
+          <input type="range" id="rngTextRotate" min="-45" max="45" value="0">
         </div>
         <div class="field">
           <label>Color</label>
@@ -143,6 +234,15 @@
           </select>
         </div>
         <div class="field">
+          <label>Animation</label>
+          <select class="select-input" id="selTextAnim">
+            <option value="none">None</option>
+            <option value="fade">Fade in/out</option>
+            <option value="slide">Slide up</option>
+            <option value="pop">Pop</option>
+          </select>
+        </div>
+        <div class="field">
           <label>Timing on sequence</label>
           <div style="display:flex; gap:8px;">
             <input type="range" id="rngTextStart" min="0" max="100" value="0" style="flex:1">
@@ -150,6 +250,45 @@
           </div>
         </div>
         <button class="btn btn-danger btn-block btn-sm" id="btnDeleteText">Delete text layer</button>
+      </div>
+    </div>
+
+    <!-- STICKERS TAB -->
+    <div class="tabpanel" data-panel="stickers">
+      <div class="field">
+        <label>Emoji &amp; stickers</label>
+        <div class="emoji-grid" id="emojiGrid"></div>
+      </div>
+      <div class="field">
+        <label>Shapes</label>
+        <div class="shape-grid">
+          <button class="shape-chip" data-shape="rect">▭ Rectangle</button>
+          <button class="shape-chip" data-shape="circle">◯ Circle</button>
+          <button class="shape-chip" data-shape="line">— Line</button>
+          <button class="shape-chip" data-shape="arrow">↗ Arrow</button>
+        </div>
+      </div>
+      <div id="stickerEmpty" class="empty-hint">Tap an emoji or shape to drop it on the preview, then drag &amp; resize.</div>
+      <div id="stickerControls" style="display:none; flex-direction:column; gap:14px;">
+        <div class="field">
+          <label>Size <span class="val" id="valStickerSize">64px</span></label>
+          <input type="range" id="rngStickerSize" min="20" max="300" value="64">
+        </div>
+        <div class="field" id="stickerColorField">
+          <label>Color</label>
+          <div class="color-row" id="stickerColorRow">
+            <div class="swatch active" style="background:#ffffff" data-color="#ffffff"></div>
+            <div class="swatch" style="background:#7c5cff" data-color="#7c5cff"></div>
+            <div class="swatch" style="background:#1fe6c9" data-color="#1fe6c9"></div>
+            <div class="swatch" style="background:#ff6b5b" data-color="#ff6b5b"></div>
+            <div class="swatch" style="background:#ffb545" data-color="#ffb545"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Rotation <span class="val" id="valStickerRotate">0°</span></label>
+          <input type="range" id="rngStickerRotate" min="-180" max="180" value="0">
+        </div>
+        <button class="btn btn-danger btn-block btn-sm" id="btnDeleteSticker">Delete sticker</button>
       </div>
     </div>
 
@@ -167,6 +306,16 @@
         <div class="field">
           <label>Music volume <span class="val" id="valMusicVol">70%</span></label>
           <input type="range" id="rngMusicVol" min="0" max="100" value="70">
+        </div>
+        <div class="field">
+          <label style="display:flex; align-items:center; justify-content:space-between;">
+            <span>Auto-duck under clip audio</span>
+            <input type="checkbox" id="chkDuck" checked>
+          </label>
+        </div>
+        <div class="field">
+          <label>Fade in / out <span class="val" id="valMusicFade">0.5s</span></label>
+          <input type="range" id="rngMusicFade" min="0" max="30" value="5">
         </div>
         <button class="btn btn-danger btn-block btn-sm" id="btnRemoveAudio">Remove track</button>
       </div>
@@ -193,6 +342,9 @@
       <button class="icon-btn" id="btnSplit" title="Split at playhead (S)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6a3 3 0 003 3M18 3v6a3 3 0 01-3 3M9 12v9M15 12v9"/></svg>
       </button>
+      <button class="icon-btn" id="btnDuplicateClip" title="Duplicate clip (Ctrl+D)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></svg>
+      </button>
       <button class="play-btn" id="btnPlay">
         <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
       </button>
@@ -208,7 +360,7 @@
     <div class="tabbar"><button class="active" style="cursor:default">Layers</button></div>
     <div class="tabpanel active" style="padding:12px;">
       <div id="layersList" style="display:flex; flex-direction:column; gap:8px;"></div>
-      <div id="layersEmpty" class="empty-hint">Layers you add — clips and text — will appear here.</div>
+      <div id="layersEmpty" class="empty-hint">Layers you add — clips, text and stickers — will appear here.</div>
     </div>
   </aside>
 
@@ -217,6 +369,7 @@
     <div class="tl-toolbar">
       <div class="grp">
         <span class="eyebrow">Timeline</span>
+        <label class="snap-toggle"><input type="checkbox" id="chkSnap" checked> Snap</label>
       </div>
       <div class="grp zoom-row">
         <span class="mono" style="font-size:11px; color:var(--text-3);">Zoom</span>
@@ -233,6 +386,10 @@
         <div class="tl-track">
           <div class="track-tag">Text</div>
           <div class="tl-lane" id="laneText"></div>
+        </div>
+        <div class="tl-track">
+          <div class="track-tag">Stickers</div>
+          <div class="tl-lane" id="laneStickers"></div>
         </div>
         <div class="tl-track">
           <div class="track-tag">Audio</div>
@@ -252,16 +409,30 @@
     <div id="exportSetup">
       <div class="field">
         <label>Resolution</label>
-        <select class="select-input" id="selRes">
-          <option value="1280x720">1280 × 720 (HD)</option>
-          <option value="1920x1080">1920 × 1080 (Full HD)</option>
-          <option value="854x480">854 × 480 (SD)</option>
+        <select class="select-input" id="selRes"></select>
+      </div>
+      <div class="field">
+        <label>Frame rate</label>
+        <select class="select-input" id="selFps">
+          <option value="24">24 fps · cinematic</option>
+          <option value="30" selected>30 fps · standard</option>
+          <option value="60">60 fps · smooth</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Quality</label>
+        <select class="select-input" id="selQuality">
+          <option value="4">Draft (fast, smaller file)</option>
+          <option value="8" selected>Standard</option>
+          <option value="16">High</option>
+          <option value="30">Maximum</option>
         </select>
       </div>
       <div class="field">
         <label>Format</label>
         <select class="select-input" id="selFormat">
           <option value="webm">WebM (best browser support)</option>
+          <option value="mp4">MP4 (if supported by this browser)</option>
         </select>
       </div>
     </div>

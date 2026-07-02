@@ -1,0 +1,113 @@
+/* ============================================================
+   VULL — design tokens
+   A precision video-editing suite. Ink-blue base, violet→teal
+   signature gradient (the "cut line"), mono timecodes.
+   ============================================================ */
+
+:root{
+  --ink-950:#0a0c11;
+  --ink-900:#0e1117;
+  --ink-800:#141922;
+  --ink-700:#1b212c;
+  --ink-600:#252c39;
+  --ink-500:#3a4353;
+  --line:#242b37;
+  --text-0:#f3f4f6;
+  --text-1:#c7cbd4;
+  --text-2:#8a90a0;
+  --text-3:#5c6272;
+
+  --violet:#7c5cff;
+  --violet-soft:#7c5cff33;
+  --teal:#1fe6c9;
+  --teal-soft:#1fe6c933;
+  --coral:#ff6b5b;
+  --warn:#ffb545;
+
+  --grad-cut: linear-gradient(90deg, var(--violet) 0%, var(--teal) 100%);
+  --grad-cut-soft: linear-gradient(90deg, var(--violet-soft) 0%, var(--teal-soft) 100%);
+
+  --font-display: "Space Grotesk", "Inter", -apple-system, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-1: 0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 24px rgba(0,0,0,0.35);
+  --shadow-2: 0 24px 64px rgba(0,0,0,0.5);
+}
+
+*, *::before, *::after{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+body{
+  margin:0;
+  background: var(--ink-950);
+  color: var(--text-0);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img{ max-width:100%; display:block; }
+a{ color: inherit; text-decoration:none; }
+button{ font-family: inherit; }
+
+::selection{ background: var(--violet); color: white; }
+
+.mono{ font-family: var(--font-mono); letter-spacing: 0.01em; }
+.eyebrow{
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.grad-text{
+  background: var(--grad-cut);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight:600;
+  font-size:14.5px;
+  border:1px solid transparent;
+  cursor:pointer;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  white-space: nowrap;
+}
+.btn:active{ transform: scale(0.97); }
+.btn-primary{
+  background: var(--text-0);
+  color: var(--ink-950);
+}
+.btn-primary:hover{ box-shadow: 0 0 0 3px var(--violet-soft); }
+.btn-ghost{
+  background: transparent;
+  border-color: var(--line);
+  color: var(--text-1);
+}
+.btn-ghost:hover{ border-color: var(--text-3); color: var(--text-0); }
+.btn-accent{
+  background: var(--grad-cut);
+  color: var(--ink-950);
+}
+.btn-accent:hover{ box-shadow: 0 0 0 3px rgba(124,92,255,0.25); }
+
+.btn:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-visible, button:focus-visible{
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
