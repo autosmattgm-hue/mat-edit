@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vull — Cut like you mean it</title>
+<meta name="description" content="Vull is a precision video editor for the web. Trim, layer, grade and export — then install it as an app.">
+<meta name="theme-color" content="#0a0c11">
+
+<link rel="manifest" href="assets/manifest.json">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+
+<style>
+  /* ---------- Landing-page-only layout ---------- */
+  header.nav{
+    position: sticky; top:0; z-index: 40;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 18px clamp(20px,5vw,64px);
+    background: rgba(10,12,17,0.72);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .logo{ display:flex; align-items:center; gap:10px; font-family: var(--font-display); font-weight:700; font-size:19px; }
+  .logo .mark{ width:26px; height:26px; border-radius:7px; background: var(--grad-cut); position:relative; flex:none; }
+  .logo .mark::after{
+    content:""; position:absolute; inset:6px 6px 5px 6px;
+    background: var(--ink-950);
+    clip-path: polygon(0 0, 30% 0, 50% 65%, 70% 0, 100% 0, 58% 100%, 42% 100%);
+  }
+  nav.links{ display:flex; align-items:center; gap:28px; }
+  nav.links a{ font-size:14px; color: var(--text-2); transition: color .15s; }
+  nav.links a:hover{ color: var(--text-0); }
+  .nav-cta{ display:flex; gap:10px; align-items:center; }
+
+  section{ padding: clamp(64px,10vw,140px) clamp(20px,5vw,64px); }
+  .wrap{ max-width: 1180px; margin: 0 auto; }
+
+  /* HERO */
+  .hero{ padding-top: clamp(56px,8vw,96px); position:relative; overflow:hidden; }
+  .hero-glow{
+    position:absolute; top:-200px; left:50%; transform:translateX(-50%);
+    width:900px; height:600px; pointer-events:none;
+    background: radial-gradient(closest-side, rgba(124,92,255,0.16), transparent 70%);
+    filter: blur(10px);
+  }
+  .hero-grid{ display:grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items:center; position:relative; }
+  @media (max-width: 940px){ .hero-grid{ grid-template-columns: 1fr; } }
+  .hero h1{
+    font-family: var(--font-display); font-weight:700;
+    font-size: clamp(40px, 5.6vw, 68px); line-height:1.02; letter-spacing:-0.02em;
+    margin: 18px 0 20px;
+  }
+  .hero p.lede{ font-size: 18px; line-height:1.6; color: var(--text-1); max-width: 46ch; margin: 0 0 32px; }
+  .hero-actions{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .hero-note{ margin-top:16px; font-size:13px; color: var(--text-3); }
+
+  /* live-ish preview card (the "signature") */
+  .preview-card{
+    background: linear-gradient(180deg, var(--ink-800), var(--ink-900));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2);
+    overflow:hidden;
+  }
+  .preview-top{ display:flex; align-items:center; justify-content:space-between; padding: 12px 16px; border-bottom:1px solid var(--line); }
+  .dots{ display:flex; gap:6px; }
+  .dots span{ width:9px; height:9px; border-radius:50%; background: var(--ink-600); }
+  .preview-top .label{ font-family: var(--font-mono); font-size:11px; color: var(--text-3); }
+  .preview-canvas{
+    aspect-ratio: 16/10.4;
+    background:
+      radial-gradient(120% 90% at 20% 15%, #2a2140 0%, transparent 55%),
+      radial-gradient(120% 90% at 85% 85%, #0e3b38 0%, transparent 55%),
+      linear-gradient(160deg,#171a24,#0c0e13 70%);
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .preview-shape{
+    width:46%; aspect-ratio:1/1.2; border-radius:14px;
+    background: linear-gradient(160deg, #2c2540, #1a2230);
+    border:1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    position:relative;
+    filter: saturate(var(--pf-sat,1)) contrast(var(--pf-con,1)) brightness(var(--pf-bri,1)) sepia(var(--pf-sep,0));
+    transition: filter .35s ease;
+  }
+  .preview-shape .cap{
+    position:absolute; left:10%; bottom:9%; right:10%;
+    font-family: var(--font-display); font-weight:600; font-size: clamp(13px,1.6vw,17px);
+    color:#fff; text-shadow: 0 2px 10px rgba(0,0,0,.6);
+  }
+  .preview-shape .tag{
+    position:absolute; top:8%; left:8%;
+    font-family: var(--font-mono); font-size:10px; letter-spacing:.08em;
+    color: rgba(255,255,255,0.65); background: rgba(0,0,0,0.35);
+    padding: 3px 7px; border-radius: 999px; border:1px solid rgba(255,255,255,0.12);
+  }
+  .preview-bottom{ padding: 14px 16px 16px; }
+  .scrubber{ height:34px; border-radius:8px; background: var(--ink-700); position:relative; overflow:hidden; margin-bottom:10px; }
+  .scrubber .wave{ position:absolute; inset:0; display:flex; align-items:center; gap:2px; padding: 0 6px; }
+  .scrubber .wave i{ flex:1; background: var(--ink-500); border-radius:2px; }
+  .scrubber .cut{ position:absolute; top:0; bottom:0; width:2px; background: var(--grad-cut); left:38%; }
+  .scrubber .cut::before{ content:""; position:absolute; top:-4px; left:-5px; width:12px; height:12px; border-radius:50%; background: var(--teal); box-shadow: 0 0 0 3px rgba(31,230,201,0.18); }
+  .filter-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .filter-chip{
+    font-family: var(--font-mono); font-size:11px; padding:6px 10px; border-radius:999px;
+    border:1px solid var(--line); color: var(--text-2); background: var(--ink-800); cursor:pointer;
+    transition: all .15s ease;
+  }
+  .filter-chip.active{ color: var(--ink-950); background: var(--grad-cut); border-color: transparent; font-weight:600; }
+
+  /* LOGO / STAT STRIP */
+  .stat-strip{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding: 34px clamp(20px,5vw,64px); }
+  .stat-grid{ max-width:1180px; margin:0 auto; display:grid; grid-template-columns: repeat(4,1fr); gap: 24px; }
+  @media (max-width:800px){ .stat-grid{ grid-template-columns: repeat(2,1fr); } }
+  .stat b{ display:block; font-family: var(--font-display); font-size: clamp(24px,3vw,34px); }
+  .stat span{ font-size:13px; color: var(--text-3); }
+
+  /* SECTION HEADERS */
+  .section-head{ max-width: 640px; margin-bottom: 48px; }
+  .section-head h2{ font-family: var(--font-display); font-size: clamp(28px,3.4vw,42px); font-weight:700; letter-spacing:-0.01em; margin: 12px 0 14px; }
+  .section-head p{ color: var(--text-2); font-size:16px; line-height:1.6; }
+
+  /* FEATURE GRID (named after real editing tools, not decoration) */
+  .tool-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border:1px solid var(--line); border-radius: var(--radius-lg); overflow:hidden; }
+  @media (max-width: 860px){ .tool-grid{ grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 560px){ .tool-grid{ grid-template-columns: 1fr; } }
+  .tool{ background: var(--ink-900); padding: 28px 24px; min-height: 190px; display:flex; flex-direction:column; gap:14px; }
+  .tool .icon{ width:34px; height:34px; }
+  .tool h3{ font-family: var(--font-display); font-size:17px; margin:0; }
+  .tool p{ color: var(--text-2); font-size:14px; line-height:1.55; margin:0; }
+  .tool .kbd{ margin-top:auto; font-family: var(--font-mono); font-size:11px; color: var(--text-3); }
+  .tool .kbd b{ color: var(--text-1); font-weight:500; border:1px solid var(--line); border-radius:4px; padding: 1px 6px; margin-right:4px;}
+
+  /* TIMELINE SHOWCASE */
+  .timeline-demo{
+    border:1px solid var(--line); border-radius: var(--radius-lg); background: var(--ink-900); overflow:hidden;
+  }
+  .td-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--line); }
+  .td-head .mono{ font-size:12px; color:var(--text-3); }
+  .td-tracks{ padding: 22px 20px 26px; display:flex; flex-direction:column; gap:12px; }
+  .track-row{ display:flex; align-items:center; gap:12px; }
+  .track-label{ width:74px; flex:none; font-family:var(--font-mono); font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:.06em; }
+  .track-lane{ flex:1; height:46px; background: var(--ink-800); border-radius:8px; position:relative; overflow:hidden; display:flex; gap:3px; padding:5px; }
+  .clip{ height:100%; border-radius:5px; flex:none; position:relative; background: linear-gradient(160deg,#241f3a,#1a1e29); border:1px solid rgba(255,255,255,0.07); }
+  .clip.a{ width:22%; background: linear-gradient(160deg,#2d2450,#1b1e2c); }
+  .clip.b{ width:16%; background: linear-gradient(160deg,#1c3a37,#152025); }
+  .clip.c{ width:30%; background: linear-gradient(160deg,#2d2450,#1b1e2c); }
+  .clip.d{ width:12%; background: linear-gradient(160deg,#1c3a37,#152025); }
+  .track-lane.audio .clip{ background: repeating-linear-gradient(90deg, #232a38 0 2px, #1b212c 2px 4px); }
+  .track-lane.text .clip{ background: var(--ink-700); border-style:dashed; }
+  .playhead{ position:absolute; top:0; bottom:0; left:34%; width:2px; background: var(--teal); }
+  .playhead::after{ content:""; position:absolute; top:-3px; left:-4px; width:10px; height:10px; border-radius:2px; background:var(--teal); transform:rotate(45deg); }
+
+  /* PLATFORM / INSTALL */
+  .install-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items:center; }
+  @media (max-width: 900px){ .install-grid{ grid-template-columns:1fr; } }
+  .steps{ counter-reset: step; display:flex; flex-direction:column; gap: 22px; margin-top: 8px;}
+  .step{ display:flex; gap:16px; }
+  .step .num{
+    flex:none; width:30px; height:30px; border-radius:8px; background: var(--ink-800); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:13px; color: var(--teal);
+  }
+  .step h4{ margin:0 0 4px; font-size:15px; font-family: var(--font-display); }
+  .step p{ margin:0; color: var(--text-2); font-size:14px; line-height:1.55; }
+  .platform-card{
+    border:1px solid var(--line); border-radius: var(--radius-lg); background: var(--ink-900); padding: 28px;
+  }
+  .platform-card .device{
+    margin: 0 auto 20px; width: 210px; height: 300px; border-radius: 26px; background: linear-gradient(180deg, var(--ink-800), var(--ink-900));
+    border: 6px solid #1a1f2a; position:relative; box-shadow: var(--shadow-2);
+  }
+  .platform-card .device .notch{ position:absolute; top:10px; left:50%; transform:translateX(-50%); width:46px; height:5px; border-radius:4px; background:#0a0c11; }
+  .platform-card .device .screen{ position:absolute; inset:22px 10px 14px; border-radius:14px; overflow:hidden; background: linear-gradient(160deg,#221c37,#0f2a27); }
+  .platform-card .device .home{ position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:60px; height:4px; border-radius:3px; background:#333a48;}
+  .platform-list{ display:flex; flex-direction:column; gap:0; }
+  .platform-list .prow{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  .platform-list .prow:last-child{ border-bottom:none; }
+  .platform-list .prow span:first-child{ color: var(--text-2); }
+  .badge-ok{ font-family: var(--font-mono); font-size:11px; color: var(--teal); }
+
+  /* TESTIMONIAL / STRIP QUOTE */
+  .quote-strip{ background: var(--ink-900); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .quote{ max-width: 820px; margin:0 auto; text-align:center; }
+  .quote p{ font-family: var(--font-display); font-size: clamp(20px,2.6vw,30px); line-height:1.4; font-weight:500; }
+  .quote footer{ margin-top:18px; color: var(--text-3); font-size:14px; }
+
+  /* PRICING */
+  .price-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:20px; }
+  @media (max-width:900px){ .price-grid{ grid-template-columns:1fr; } }
+  .price-card{ border:1px solid var(--line); border-radius: var(--radius-lg); padding: 28px; background: var(--ink-900); display:flex; flex-direction:column; gap:18px; }
+  .price-card.featured{ border-color: var(--violet); background: linear-gradient(180deg, rgba(124,92,255,0.08), var(--ink-900) 40%); position:relative; }
+  .price-card.featured::before{
+    content:"MOST USED"; position:absolute; top:-11px; left:24px; font-family: var(--font-mono); font-size:10px; letter-spacing:.1em;
+    background: var(--grad-cut); color: var(--ink-950); padding:4px 10px; border-radius:999px; font-weight:700;
+  }
+  .price-card h3{ margin:0; font-family: var(--font-display); font-size:18px; }
+  .price-card .amount{ font-family: var(--font-display); font-size:38px; }
+  .price-card .amount span{ font-size:14px; color: var(--text-3); font-family: var(--font-body); }
+  .price-card ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; font-size:13.5px; color: var(--text-2); }
+  .price-card li::before{ content:"—"; color: var(--text-3); margin-right:8px; }
+
+  /* FOOTER CTA */
+  .cta-final{ text-align:center; }
+  .cta-final h2{ font-family: var(--font-display); font-size: clamp(30px,4.6vw,54px); font-weight:700; letter-spacing:-0.02em; margin: 0 0 18px; }
+  .cta-final p{ color: var(--text-2); margin: 0 0 32px; }
+
+  footer.site{ border-top:1px solid var(--line); padding: 40px clamp(20px,5vw,64px) 60px; }
+  .foot-grid{ max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  .foot-grid .cols{ display:flex; gap:56px; flex-wrap:wrap; }
+  .foot-col h5{ font-family: var(--font-mono); font-size:11px; letter-spacing:.1em; color: var(--text-3); text-transform:uppercase; margin: 0 0 12px; }
+  .foot-col a{ display:block; font-size:13.5px; color: var(--text-2); padding: 5px 0; }
+  .foot-col a:hover{ color: var(--text-0); }
+  .foot-bottom{ max-width:1180px; margin: 32px auto 0; padding-top:20px; border-top:1px solid var(--line); display:flex; justify-content:space-between; color: var(--text-3); font-size:12px; flex-wrap:wrap; gap:10px; }
+
+  /* reveal-on-scroll */
+  .reveal{ opacity:0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in{ opacity:1; transform:none; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="logo"><span class="mark"></span>Vull</div>
+  <nav class="links">
+    <a href="#tools">Tools</a>
+    <a href="#timeline">Timeline</a>
+    <a href="#install">Install</a>
+    <a href="#pricing">Pricing</a>
+  </nav>
+  <div class="nav-cta">
+    <a class="btn btn-ghost" href="app.html">Open editor</a>
+    <a class="btn btn-primary" href="app.html">Start cutting</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Web-based · installs as an app</span>
+      <h1>Cut like<br>you mean it.</h1>
+      <p class="lede">Vull is a precision video editor that runs in your browser and lives on your home screen. Trim frame-accurate, layer text and audio, grade with real filters, and export — no upload queues, no watermark, no waiting on a render farm.</p>
+      <div class="hero-actions">
+        <a class="btn btn-accent" href="app.html">Open the editor →</a>
+        <a class="btn btn-ghost" href="#install">Install as an app</a>
+      </div>
+      <p class="hero-note">Runs entirely on your device. Nothing you edit is uploaded anywhere.</p>
+    </div>
+
+    <div class="preview-card reveal">
+      <div class="preview-top">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="label mono">PREVIEW · 00:04.180</div>
+      </div>
+      <div class="preview-canvas">
+        <div class="preview-shape" id="pf-shape">
+          <span class="tag">CLIP 02</span>
+          <span class="cap" id="pf-cap">golden hour, gimbal pass</span>
+        </div>
+      </div>
+      <div class="preview-bottom">
+        <div class="scrubber">
+          <div class="wave" id="pf-wave"></div>
+          <div class="cut"></div>
+        </div>
+        <div class="filter-row" id="pf-filters">
+          <button class="filter-chip active" data-f="none">Original</button>
+          <button class="filter-chip" data-f="vivid">Vivid</button>
+          <button class="filter-chip" data-f="mono">Mono</button>
+          <button class="filter-chip" data-f="vintage">Vintage</button>
+          <button class="filter-chip" data-f="cold">Cold</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stat-strip">
+  <div class="stat-grid">
+    <div class="stat reveal"><b>0ms</b><span>upload wait — files stay local</span></div>
+    <div class="stat reveal"><b>4K/60</b><span>preview &amp; export ceiling</span></div>
+    <div class="stat reveal"><b>∞</b><span>exports, no watermark</span></div>
+    <div class="stat reveal"><b>PWA</b><span>installs on desktop &amp; mobile</span></div>
+  </div>
+</div>
+
+<section id="tools">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">The toolkit</span>
+      <h2>Everything on the timeline, nothing in a menu maze.</h2>
+      <p>Every tool below is live in the editor today — not a roadmap slide.</p>
+    </div>
+    <div class="tool-grid">
+      <div class="tool reveal">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M6 3v18M18 3v18M3 8l4 4-4 4M21 8l-4 4 4 4" stroke="url(#g1)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="g1" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#7c5cff"/><stop offset="1" stop-color="#1fe6c9"/></linearGradient></defs></svg>
+        <h3>Trim &amp; split</h3>
+        <p>Drag either edge of a clip to trim, or drop the playhead and split — down to the frame.</p>
+        <div class="kbd"><b>S</b> split <b>⌫</b> ripple delete</div>
+      </div>
+      <div class="tool reveal">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="url(#g2)" stroke-width="1.6"/><path d="M12 4v16M4 12h16" stroke="url(#g2)" stroke-width="1.2" opacity=".5"/><defs><linearGradient id="g2" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#7c5cff"/><stop offset="1" stop-color="#1fe6c9"/></linearGradient></defs></svg>
+        <h3>Color grade</h3>
+        <p>Brightness, contrast, saturation, temperature and five built-in looks, blended live over your footage.</p>
+        <div class="kbd"><b>G</b> open grade panel</div>
+      </div>
+      <div class="tool reveal">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 7h10M4 12h16M4 17h7" stroke="url(#g3)" stroke-width="1.6" stroke-linecap="round"/><defs><linearGradient id="g3" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#7c5cff"/><stop offset="1" stop-color="#1fe6c9"/></linearGradient></defs></svg>
+        <h3>Text &amp; captions</h3>
+        <p>Drop styled text anywhere on frame, set its in/out point, and drag it to reposition in the preview.</p>
+        <div class="kbd"><b>T</b> add text layer</div>
+      </div>
+      <div class="tool reveal">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 15V9M8 18V6M12 20V4M16 16v-8M20 13v-2" stroke="url(#g4)" stroke-width="1.6" stroke-linecap="round"/><defs><linearGradient id="g4" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#7c5cff"/><stop offset="1" stop-color="#1fe6c9"/></linearGradient></defs></svg>
+        <h3>Audio mixing</h3>
+        <p>Duck original clip audio, layer a music bed, and ride volume per-track without leaving the timeline.</p>
+        <div class="kbd"><b>M</b> mute clip</div>
+      </div>
+      <div class="tool reveal">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1116 0 8 8 0 01-16 0z" stroke="url(#g5)" stroke-width="1.6"/><path d="M12 8l3 4-3 4" stroke="url(#g5)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="g5" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#7c5cff"/><stop offset="1" stop-color="#1fe6c9"/></linearGradient></defs></svg>
+        <h3>Speed ramp</h3>
+        <p>0.25× to 4× per clip, with automatic pitch-safe audio so voice doesn't chipmunk.</p>
+        <div class="kbd"><b>R</b> speed dial</div>
+      </div>
+      <div class="tool reveal">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="url(#g6)" stroke-width="1.6"/><path d="M9 9l6 6M15 9l-6 6" stroke="url(#g6)" stroke-width="1.6" stroke-linecap="round"/><defs><linearGradient id="g6" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#7c5cff"/><stop offset="1" stop-color="#1fe6c9"/></linearGradient></defs></svg>
+        <h3>Export local</h3>
+        <p>Render straight to a downloadable file at your chosen resolution. No account, no watermark, no queue.</p>
+        <div class="kbd"><b>⌘E</b> export</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="timeline">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">The timeline</span>
+      <h2>Three tracks. One playhead. Zero confusion.</h2>
+      <p>Video, audio, and text sit on separate lanes so you always know what you're moving.</p>
+    </div>
+    <div class="timeline-demo reveal">
+      <div class="td-head">
+        <span class="mono">sequence_01.vull</span>
+        <span class="mono">00:00 / 00:24</span>
+      </div>
+      <div class="td-tracks">
+        <div class="track-row">
+          <div class="track-label">Video</div>
+          <div class="track-lane">
+            <div class="clip a"></div><div class="clip b"></div><div class="clip c"></div><div class="clip d"></div>
+            <div class="playhead"></div>
+          </div>
+        </div>
+        <div class="track-row">
+          <div class="track-label">Text</div>
+          <div class="track-lane text">
+            <div class="clip" style="width:14%;margin-left:6%"></div>
+            <div class="clip" style="width:20%;margin-left:30%"></div>
+          </div>
+        </div>
+        <div class="track-row">
+          <div class="track-label">Audio</div>
+          <div class="track-lane audio">
+            <div class="clip" style="width:92%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap install-grid">
+    <div>
+      <span class="eyebrow reveal">Install</span>
+      <h2 class="reveal" style="font-family:var(--font-display);font-size:clamp(28px,3.4vw,42px);margin:12px 0 20px;">Put it on your home screen. It behaves like one.</h2>
+      <p class="reveal" style="color:var(--text-2);margin-bottom:8px;">Vull is a Progressive Web App — one install, and it opens full-screen, works offline for editing, and shows up next to your other apps.</p>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="num">1</div>
+          <div><h4>Open the editor</h4><p>Visit the app in Chrome, Edge, or Safari — desktop or mobile.</p></div>
+        </div>
+        <div class="step reveal">
+          <div class="num">2</div>
+          <div><h4>Tap "Install" or "Add to Home Screen"</h4><p>Desktop Chrome shows an install icon in the address bar. On iPhone, use Share → Add to Home Screen.</p></div>
+        </div>
+        <div class="step reveal">
+          <div class="num">3</div>
+          <div><h4>Launch it like any app</h4><p>It opens in its own window, no browser chrome, with an icon on your dock, taskbar, or home screen.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="platform-card reveal">
+      <div class="device">
+        <div class="notch"></div>
+        <div class="screen"></div>
+        <div class="home"></div>
+      </div>
+      <div class="platform-list">
+        <div class="prow"><span>macOS · Chrome / Edge</span><span class="badge-ok">Installable</span></div>
+        <div class="prow"><span>Windows · Chrome / Edge</span><span class="badge-ok">Installable</span></div>
+        <div class="prow"><span>Android · Chrome</span><span class="badge-ok">Installable</span></div>
+        <div class="prow"><span>iOS / iPadOS · Safari</span><span class="badge-ok">Add to Home Screen</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="quote-strip">
+  <section>
+    <div class="quote reveal">
+      <p>"The timeline finally feels like it respects my time. I cut a whole reel on the train, offline, and it just exported when I landed."</p>
+      <footer>— an editor who tried it, paraphrased for this page</footer>
+    </div>
+  </section>
+</div>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Pricing</span>
+      <h2>Free to cut. Pay only for headroom.</h2>
+      <p>Every plan exports without a watermark. No plan uploads your footage anywhere.</p>
+    </div>
+    <div class="price-grid">
+      <div class="price-card reveal">
+        <h3>Starter</h3>
+        <div class="amount">$0<span> / forever</span></div>
+        <ul>
+          <li>1080p export</li>
+          <li>3 tracks (video, text, audio)</li>
+          <li>Core filters &amp; speed ramp</li>
+          <li>Unlimited projects, local storage</li>
+        </ul>
+        <a class="btn btn-ghost" href="app.html">Start free</a>
+      </div>
+      <div class="price-card featured reveal">
+        <h3>Studio</h3>
+        <div class="amount">$9<span> / month</span></div>
+        <ul>
+          <li>4K/60 export</li>
+          <li>Unlimited tracks</li>
+          <li>Full grading suite + curves</li>
+          <li>Offline install with background export</li>
+        </ul>
+        <a class="btn btn-accent" href="app.html">Start free trial</a>
+      </div>
+      <div class="price-card reveal">
+        <h3>Team</h3>
+        <div class="amount">$24<span> / editor / mo</span></div>
+        <ul>
+          <li>Everything in Studio</li>
+          <li>Shared project library</li>
+          <li>Comment &amp; review mode</li>
+          <li>Priority render queue</li>
+        </ul>
+        <a class="btn btn-ghost" href="app.html">Talk to us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-final">
+  <div class="wrap">
+    <h2 class="reveal">Open a blank timeline<br>and start cutting.</h2>
+    <p class="reveal">No sign-up to try it. Your first export is one drop-in away.</p>
+    <a class="btn btn-accent reveal" href="app.html">Open the editor →</a>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="foot-grid">
+    <div class="logo">
+      <span class="mark"></span>Vull
+    </div>
+    <div class="cols">
+      <div class="foot-col">
+        <h5>Product</h5>
+        <a href="app.html">Editor</a>
+        <a href="#tools">Tools</a>
+        <a href="#install">Install</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="foot-col">
+        <h5>Resources</h5>
+        <a href="#">Shortcut sheet</a>
+        <a href="#">Changelog</a>
+        <a href="#">Status</a>
+      </div>
+      <div class="foot-col">
+        <h5>Company</h5>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+        <a href="#">Privacy</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 Vull. All footage stays on your device.</span>
+    <span class="mono">v1.0.0</span>
+  </div>
+</footer>
+
+<script>
+  // Reveal-on-scroll
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // Fake waveform bars
+  const wave = document.getElementById('pf-wave');
+  if(wave){
+    let bars = '';
+    for(let i=0;i<64;i++){
+      const h = 20 + Math.round(Math.sin(i*0.5)*10 + Math.random()*40);
+      bars += `<i style="height:${Math.max(10,Math.min(90,h))}%"></i>`;
+    }
+    wave.innerHTML = bars;
+  }
+
+  // Hero filter chips swap CSS custom properties on the preview shape
+  const shape = document.getElementById('pf-shape');
+  const cap = document.getElementById('pf-cap');
+  const presets = {
+    none:    { sat:1,   con:1,   bri:1,   sep:0,   text:'golden hour, gimbal pass' },
+    vivid:   { sat:1.6, con:1.15,bri:1.05,sep:0,   text:'punched saturation +60' },
+    mono:    { sat:0,   con:1.1, bri:1.02,sep:0,   text:'black & white, filmic' },
+    vintage: { sat:0.75,con:0.92,bri:1.05,sep:0.35,text:'warm halation, 16mm' },
+    cold:    { sat:0.85,con:1.08,bri:0.98,sep:0,   text:'teal shadows, blue push' }
+  };
+  document.querySelectorAll('#pf-filters .filter-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('#pf-filters .filter-chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      const p = presets[chip.dataset.f];
+      shape.style.setProperty('--pf-sat', p.sat);
+      shape.style.setProperty('--pf-con', p.con);
+      shape.style.setProperty('--pf-bri', p.bri);
+      shape.style.setProperty('--pf-sep', p.sep);
+      cap.textContent = p.text;
+    });
+  });
+
+  // Register service worker for installability
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
+    });
+  }
+
+  // Custom install prompt hook (optional enhancement)
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+</script>
+</body>
+</html>

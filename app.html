@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Vull Editor</title>
+<meta name="theme-color" content="#0a0c11">
+<link rel="manifest" href="assets/manifest.json">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vull">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<div class="editor">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="tb-left">
+      <a class="logo" href="index.html"><span class="mark"></span>Vull</a>
+      <div class="tb-sep"></div>
+      <input class="proj-name" id="projName" value="untitled_sequence" spellcheck="false">
+    </div>
+    <div class="tb-right">
+      <button class="icon-btn" id="btnUndo" title="Undo (Ctrl+Z)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7L4 12l5 5"/><path d="M4 12h11a5 5 0 010 10h-1"/></svg>
+      </button>
+      <button class="icon-btn" id="btnRedo" title="Redo (Ctrl+Shift+Z)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7l5 5-5 5"/><path d="M20 12H9a5 5 0 000 10h1"/></svg>
+      </button>
+      <div class="tb-sep"></div>
+      <button class="icon-btn" id="btnInstall" title="Install Vull as an app">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+      </button>
+      <button class="btn btn-accent btn-sm" id="btnExport">Export</button>
+    </div>
+  </header>
+
+  <!-- MOBILE TAB SWITCH -->
+  <div class="mobile-tabswitch">
+    <button class="btn btn-ghost btn-sm" id="mobShowLeft">Media &amp; Edit</button>
+    <button class="btn btn-ghost btn-sm" id="mobShowRight">Layers</button>
+  </div>
+
+  <!-- LEFT PANEL: import + edit tools -->
+  <aside class="panel-left" id="panelLeft">
+    <div class="tabbar">
+      <button class="tab-btn active" data-tab="media">Media</button>
+      <button class="tab-btn" data-tab="grade">Grade</button>
+      <button class="tab-btn" data-tab="text">Text</button>
+      <button class="tab-btn" data-tab="audio">Audio</button>
+    </div>
+
+    <!-- MEDIA TAB -->
+    <div class="tabpanel active" data-panel="media">
+      <div class="dropzone" id="dropzone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>
+        <p>Drop video or images<br>or click to browse</p>
+        <span>MP4, WebM, MOV, JPG, PNG</span>
+      </div>
+      <input type="file" id="fileInput" class="hidden-media" accept="video/*,image/*" multiple>
+      <div class="media-grid" id="mediaGrid"></div>
+    </div>
+
+    <!-- GRADE TAB -->
+    <div class="tabpanel" data-panel="grade">
+      <div id="gradeEmpty" class="empty-hint">Select a clip on the timeline to grade it.</div>
+      <div id="gradeControls" style="display:none; flex-direction:column; gap:16px;">
+        <div class="preset-grid" id="presetGrid">
+          <div class="preset-chip active" data-preset="none">Original</div>
+          <div class="preset-chip" data-preset="vivid">Vivid</div>
+          <div class="preset-chip" data-preset="mono">Mono</div>
+          <div class="preset-chip" data-preset="vintage">Vintage</div>
+          <div class="preset-chip" data-preset="cold">Cold</div>
+          <div class="preset-chip" data-preset="warm">Warm</div>
+        </div>
+        <div class="field">
+          <label>Brightness <span class="val" id="valBrightness">100%</span></label>
+          <input type="range" id="rngBrightness" min="40" max="180" value="100">
+        </div>
+        <div class="field">
+          <label>Contrast <span class="val" id="valContrast">100%</span></label>
+          <input type="range" id="rngContrast" min="40" max="180" value="100">
+        </div>
+        <div class="field">
+          <label>Saturation <span class="val" id="valSaturation">100%</span></label>
+          <input type="range" id="rngSaturation" min="0" max="220" value="100">
+        </div>
+        <div class="field">
+          <label>Temperature <span class="val" id="valTemp">0</span></label>
+          <input type="range" id="rngTemp" min="-50" max="50" value="0">
+        </div>
+        <div class="field">
+          <label>Vignette <span class="val" id="valVignette">0%</span></label>
+          <input type="range" id="rngVignette" min="0" max="100" value="0">
+        </div>
+        <div class="field">
+          <label>Speed <span class="val" id="valSpeed">1.0×</span></label>
+          <input type="range" id="rngSpeed" min="25" max="400" value="100">
+        </div>
+        <button class="btn btn-ghost btn-block btn-sm" id="btnResetGrade">Reset to original</button>
+      </div>
+    </div>
+
+    <!-- TEXT TAB -->
+    <div class="tabpanel" data-panel="text">
+      <button class="btn btn-primary btn-block btn-sm" id="btnAddText">+ Add text layer</button>
+      <div id="textEmpty" class="empty-hint">Add a text layer, then drag it into place on the preview.</div>
+      <div id="textControls" style="display:none; flex-direction:column; gap:14px;">
+        <div class="field">
+          <label>Content</label>
+          <textarea class="text-input" id="txtContent" placeholder="Type your caption…"></textarea>
+        </div>
+        <div class="field">
+          <label>Size <span class="val" id="valTextSize">42px</span></label>
+          <input type="range" id="rngTextSize" min="14" max="120" value="42">
+        </div>
+        <div class="field">
+          <label>Color</label>
+          <div class="color-row" id="colorRow">
+            <div class="swatch active" style="background:#ffffff" data-color="#ffffff"></div>
+            <div class="swatch" style="background:#0a0c11" data-color="#0a0c11"></div>
+            <div class="swatch" style="background:#7c5cff" data-color="#7c5cff"></div>
+            <div class="swatch" style="background:#1fe6c9" data-color="#1fe6c9"></div>
+            <div class="swatch" style="background:#ff6b5b" data-color="#ff6b5b"></div>
+            <div class="swatch" style="background:#ffb545" data-color="#ffb545"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Font</label>
+          <select class="select-input" id="selFont">
+            <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+            <option value="'Inter', sans-serif">Inter</option>
+            <option value="'IBM Plex Mono', monospace">Plex Mono</option>
+            <option value="Georgia, serif">Georgia</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Timing on sequence</label>
+          <div style="display:flex; gap:8px;">
+            <input type="range" id="rngTextStart" min="0" max="100" value="0" style="flex:1">
+            <input type="range" id="rngTextEnd" min="0" max="100" value="100" style="flex:1">
+          </div>
+        </div>
+        <button class="btn btn-danger btn-block btn-sm" id="btnDeleteText">Delete text layer</button>
+      </div>
+    </div>
+
+    <!-- AUDIO TAB -->
+    <div class="tabpanel" data-panel="audio">
+      <div class="dropzone" id="audioDropzone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <p>Drop a music track<br>or click to browse</p>
+        <span>MP3, WAV, M4A</span>
+      </div>
+      <input type="file" id="audioInput" class="hidden-media" accept="audio/*">
+      <div id="audioEmpty" class="empty-hint">No music track added yet.</div>
+      <div id="audioControls" style="display:none; flex-direction:column; gap:16px;">
+        <div class="field"><label id="audioFileName" style="text-transform:none">track.mp3</label></div>
+        <div class="field">
+          <label>Music volume <span class="val" id="valMusicVol">70%</span></label>
+          <input type="range" id="rngMusicVol" min="0" max="100" value="70">
+        </div>
+        <button class="btn btn-danger btn-block btn-sm" id="btnRemoveAudio">Remove track</button>
+      </div>
+      <div class="field" style="margin-top:8px; border-top:1px solid var(--line); padding-top:16px;">
+        <label>Clip audio (selected clip) <span class="val" id="valClipVol">100%</span></label>
+        <input type="range" id="rngClipVol" min="0" max="100" value="100">
+      </div>
+    </div>
+  </aside>
+
+  <!-- STAGE -->
+  <main class="stage" id="stage">
+    <div class="canvas-wrap" id="canvasWrap" style="display:none;">
+      <canvas id="previewCanvas" width="1280" height="720"></canvas>
+      <div class="overlay-layer" id="overlayLayer"></div>
+    </div>
+    <div class="empty-stage" id="emptyStage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 9l6 3-6 3V9z"/></svg>
+      <h3>Your timeline is empty</h3>
+      <p>Import a video or photo to start cutting. Everything renders locally in this tab.</p>
+      <button class="btn btn-accent btn-sm" id="btnEmptyImport">Import media</button>
+    </div>
+    <div class="transport" id="transport" style="display:none;">
+      <button class="icon-btn" id="btnSplit" title="Split at playhead (S)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6a3 3 0 003 3M18 3v6a3 3 0 01-3 3M9 12v9M15 12v9"/></svg>
+      </button>
+      <button class="play-btn" id="btnPlay">
+        <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <div class="time mono"><span id="tCurrent">00:00.00</span> / <span id="tTotal">00:00.00</span></div>
+      <button class="icon-btn" id="btnDeleteClip" title="Delete clip (Del)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL: layers -->
+  <aside class="panel-right" id="panelRight">
+    <div class="tabbar"><button class="active" style="cursor:default">Layers</button></div>
+    <div class="tabpanel active" style="padding:12px;">
+      <div id="layersList" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <div id="layersEmpty" class="empty-hint">Layers you add — clips and text — will appear here.</div>
+    </div>
+  </aside>
+
+  <!-- TIMELINE -->
+  <section class="timeline">
+    <div class="tl-toolbar">
+      <div class="grp">
+        <span class="eyebrow">Timeline</span>
+      </div>
+      <div class="grp zoom-row">
+        <span class="mono" style="font-size:11px; color:var(--text-3);">Zoom</span>
+        <input type="range" id="rngZoom" min="20" max="200" value="70">
+      </div>
+    </div>
+    <div class="tl-body" id="tlBody">
+      <div class="tl-ruler" id="tlRuler"></div>
+      <div class="tl-tracks" id="tlTracks">
+        <div class="tl-track">
+          <div class="track-tag">Video</div>
+          <div class="tl-lane" id="laneVideo"></div>
+        </div>
+        <div class="tl-track">
+          <div class="track-tag">Text</div>
+          <div class="tl-lane" id="laneText"></div>
+        </div>
+        <div class="tl-track">
+          <div class="track-tag">Audio</div>
+          <div class="tl-lane" id="laneAudio"></div>
+        </div>
+        <div class="tl-playhead" id="tlPlayhead" style="left:64px;"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-backdrop" id="exportModal">
+  <div class="modal">
+    <h3 id="exportTitle">Export sequence</h3>
+    <p id="exportSub">Renders locally in this tab and downloads as a file. Keep this tab open until it finishes.</p>
+    <div id="exportSetup">
+      <div class="field">
+        <label>Resolution</label>
+        <select class="select-input" id="selRes">
+          <option value="1280x720">1280 × 720 (HD)</option>
+          <option value="1920x1080">1920 × 1080 (Full HD)</option>
+          <option value="854x480">854 × 480 (SD)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Format</label>
+        <select class="select-input" id="selFormat">
+          <option value="webm">WebM (best browser support)</option>
+        </select>
+      </div>
+    </div>
+    <div id="exportProgress" style="display:none;">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="mono" style="font-size:12px; color:var(--text-3);" id="progressLabel">Rendering frame…</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" id="btnCancelExport">Cancel</button>
+      <button class="btn btn-accent btn-sm" id="btnStartExport">Start export</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
